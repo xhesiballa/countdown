@@ -1,0 +1,63 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+
+	<body>
+	</body>
+	<script src="index.js"></script>
+	<script>
+		let url = new URL(document.location);
+		let params = url.searchParams;
+		let deadline = params.get("deadline");
+		console.log("deadline: " + deadline);
+		let title = params.get("title");
+		if(deadline){
+			let header = document.createElement('h1');
+			header.innerHTML = title;
+			document.body.append(header);
+
+			let date = new Date(new Number(deadline));
+			console.log(date);
+			let c = new Clock(date, function(){ alert('countdown complete') });
+			document.body.appendChild(c.el);
+
+			{
+				let div = document.createElement("div");
+				let link = document.createElement("input");
+				link.value = url;
+				link.disabled = true;
+				div.appendChild(link);
+				let button = document.createElement("button");
+				button.innerHTML = 'Copy Link';
+				button.onclick = () => {
+					navigator.permissions.query({name: "clipboard-write"}).then(result => {
+					  if (result.state == "granted" || result.state == "prompt") {
+					    navigator.clipboard.writeText(url)
+					    .then(() => { /* clipboard successfully set */  },  () => { /* clipboard write failed */});}
+					});
+  				};
+				div.appendChild(button);
+				document.body.appendChild(div);
+			}
+		}else{
+			 let el = document.createElement('div');
+			 el.innerHTML = "<label>Title:</label><input type='text' id='title'></br>" + 
+			 	"<label>Deadline:</label><input type='datetime-local' id='deadline'></br>" + 
+			 	"<button onclick='createTimer()'>Create</button>";
+			 document.body.appendChild(el);
+		}
+
+		function createTimer(){
+			let url = new URL(window.location);
+			let title = document.getElementById("title");
+			url.searchParams.append("title", title.value);
+			let datePicker = document.getElementById("deadline");
+			let deadline = Date.parse(datePicker.value);
+			console.log(deadline);
+			url.searchParams.append("deadline", deadline.valueOf())
+			window.location = url;
+		}
+	</script>
+</html>
+
