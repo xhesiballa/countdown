@@ -1,9 +1,6 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="style.css">
-		<!-- Materialize -->
-	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-	    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	</head>
 
@@ -51,7 +48,8 @@
 			 let el = document.createElement('div');
 			 el.innerHTML = "<label>Title:</label><input type='text' id='title'></br>" + 
 			 	"<label>Deadline:</label><input type='text' id='deadline'></br>" + 
-			 	"<button onclick='createTimer()'>Create</button>";
+			 	"<a class='waves-effect waves-light btn' onclick='createTimer()'>Create</a>";
+			 	// "<button onclick='createTimer()'>Create</button>";
 			 document.body.appendChild(el);
 			 dateTimePicker();
 			 document.getElementById("deadline").onfocus = () => {d_instance.open()};

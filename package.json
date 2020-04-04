@@ -1,0 +1,26 @@
+{
+  "name": "countdown",
+  "version": "1.0.0",
+  "description": "Countdown app",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xhesiballa/countdown.git"
+  },
+  "author": "Xhesi Balla",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xhesiballa/countdown/issues"
+  },
+  "homepage": "https://github.com/xhesiballa/countdown",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {
+    "materialize-css": "^1.0.0-rc.2"
+  }
+}

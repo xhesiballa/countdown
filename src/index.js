@@ -1,3 +1,9 @@
+
+import "materialize-css/dist/css/materialize.min.css";
+import "materialize-css/dist/js/materialize.min.js";
+
+
+
 function CountdownTracker(label, value){
 
   var el = document.createElement('span');
