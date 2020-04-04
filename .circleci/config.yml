@@ -1,0 +1,55 @@
+version: 2.1
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - deploy-pages:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+jobs:
+  build:
+    docker: 
+      - image: circleci/node:10.16.3   # the primary container, where your job's commands are run
+    steps:
+      - checkout # check out the code in the project directory
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: install-npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: build web-app
+          command: 'sudo npm run build'
+      - persist_to_workspace:
+          root: build
+          paths: output/*
+  deploy-pages:
+    docker:
+      - image: circleci/node:10.16.3 
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: Install and configure dependencies
+          command: |
+              sudo npm install -g gh-pages@2.0.1
+              sudo git config user.email "circleci@circleci"
+              sudo git config user.name "circleci"
+      - add_ssh_keys:
+          fingerprints:
+            - "d0:2c:49:d2:7b:57:4e:5d:50:30:4c:6b:09:6f:18:6c"
+      - run: 
+          name: Deploy docs to gh-pages branch
+          command: gh-pages --dist /build/output

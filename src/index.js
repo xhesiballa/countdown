@@ -2,109 +2,102 @@
 import "materialize-css/dist/css/materialize.min.css";
 import "materialize-css/dist/js/materialize.min.js";
 
+import Clock from "./Clock.js";
 
+function createTimer(){
+  let url = new URL(window.location);
+  let title = document.getElementById("title");
+  url.searchParams.append("title", title.value);
+  let datePicker = document.getElementById("deadline");
+  let deadline = Date.parse(datePicker.value);
+  console.log(deadline);
+  url.searchParams.append("deadline", deadline.valueOf())
+  window.location = url;
+}
 
-function CountdownTracker(label, value){
+function dateTimePicker(){
+  var d_elems = document.createElement("input");
+    d_elems.hidden = true;
+    d_elems.type = "text";
+    d_elems.classList.add("datepicker");
+  document.body.appendChild(d_elems);
 
-  var el = document.createElement('span');
+    let t_elems = document.createElement("input");
+    t_elems.hidden = true;
+    t_elems.type = "text";
+    t_elems.classList.add("timepicker");
+    document.body.appendChild(t_elems);
 
-  el.className = 'flip-clock__piece';
-  el.innerHTML = '<b class="flip-clock__card card"><b class="card__top"></b><b class="card__bottom"></b><b class="card__back"><b class="card__bottom"></b></b></b>' + 
-    '<span class="flip-clock__slot">' + label + '</span>';
+   document.addEventListener('DOMContentLoaded', () => {
+      d_elems = document.querySelectorAll('.datepicker');
 
-  this.el = el;
-
-  var top = el.querySelector('.card__top'),
-      bottom = el.querySelector('.card__bottom'),
-      back = el.querySelector('.card__back'),
-      backBottom = el.querySelector('.card__back .card__bottom');
-
-  this.update = function(val){
-    //add this condition to allow display 3 digit numbers 
-    if(val < 99){
-      val = ( '0' + val ).slice(-2);
-    }
-    if ( val !== this.currentValue ) {
       
-      if ( this.currentValue >= 0 ) {
-        back.setAttribute('data-value', this.currentValue);
-        bottom.setAttribute('data-value', this.currentValue);
+      d_instance = M.Datepicker.init(d_elems, 
+        { autoClose: true, 
+          format: "yyyy-mm-dd",
+          minDate: new Date(),
+          onClose: () => t_instance.open()
+        })[0];
+      console.log(d_instance);
+
+      let t_elems = document.querySelectorAll('.timepicker');
+      
+      t_instance = M.Timepicker.init(t_elems, {
+        onCloseEnd: dateTimePicked
+      })[0];
+
+      function dateTimePicked(){
+        let time = t_instance.time + " " + d_instance.toString();
+        document.getElementById("deadline").value = time;
+        console.log(d_instance.toString() + "T" + t_instance.time);
       }
-      this.currentValue = val;
-      top.innerText = this.currentValue;
-      backBottom.setAttribute('data-value', this.currentValue);
+   });
+}
 
-      this.el.classList.remove('flip');
-      void this.el.offsetWidth;
-      this.el.classList.add('flip');
-    }
+let d_instance;
+let t_instance;
+
+let url = new URL(document.location);
+let params = url.searchParams;
+let deadline = params.get("deadline");
+console.log("deadline: " + deadline);
+let title = params.get("title");
+if(deadline){
+  let header = document.createElement('h1');
+  header.innerHTML = title;
+  document.body.append(header);
+
+  let date = new Date(new Number(deadline));
+  console.log(date);
+  let c = new Clock(date, function(){ alert('countdown complete') });
+  document.body.appendChild(c.el);
+  {
+    let div = document.createElement("div");
+    let link = document.createElement("input");
+    link.value = url;
+    link.disabled = true;
+    div.appendChild(link);
+    let button = document.createElement("button");
+    button.innerHTML = 'Copy Link';
+    button.onclick = () => {
+      navigator.permissions.query({name: "clipboard-write"}).then(result => {
+        if (result.state == "granted" || result.state == "prompt") {
+          navigator.clipboard.writeText(url)
+          .then(() => { /* clipboard successfully set */  },  () => { /* clipboard write failed */});}
+      });
+      };
+    div.appendChild(button);
+    document.body.appendChild(div);
   }
-  
-  this.update(value);
+}else{
+   let el = document.createElement('div');
+   el.innerHTML = "<label>Title:</label><input type='text' id='title'></br>" + 
+    "<label>Deadline:</label><input type='text' id='deadline'></br>" + 
+    "<a class='waves-effect waves-light btn' id='createButton'>Create</a>";
+   document.body.appendChild(el);
+   dateTimePicker();
+   document.getElementById("deadline").onfocus = () => {d_instance.open()};
+   document.getElementById("createButton").onclick = () => {console.log('clicked');createTimer();};
+
 }
 
-function getTimeRemaining(endtime) {
-  var t = Date.parse(endtime) - Date.parse(new Date());
-  return {
-    'Total': t,
-    'Days': Math.floor(t / (1000 * 60 * 60 * 24)),
-    'Hours': Math.floor((t / (1000 * 60 * 60)) % 24),
-    'Minutes': Math.floor((t / 1000 / 60) % 60),
-    'Seconds': Math.floor((t / 1000) % 60)
-  };
-}
-
-function getTime() {
-  var t = new Date();
-  return {
-    'Total': t,
-    'Hours': t.getHours() % 12,
-    'Minutes': t.getMinutes(),
-    'Seconds': t.getSeconds()
-  };
-}
-
-function Clock(countdown,callback) {
-  
-  countdown = countdown ? new Date(Date.parse(countdown)) : false;
-  callback = callback || function(){};
-  
-  var updateFn = countdown ? getTimeRemaining : getTime;
-
-  this.el = document.createElement('div');
-  this.el.className = 'flip-clock';
-
-  var trackers = {},
-      t = updateFn(countdown),
-      key, timeinterval;
-
-  for ( key in t ){
-    if ( key === 'Total' ) { continue; }
-    trackers[key] = new CountdownTracker(key, t[key]);
-    this.el.appendChild(trackers[key].el);
-  }
-
-  var i = 0;
-  function updateClock() {
-    timeinterval = requestAnimationFrame(updateClock);
-    
-    // throttle so it's not constantly updating the time.
-    if ( i++ % 10 ) { return; }
-    
-    var t = updateFn(countdown);
-    if ( t.Total < 0 ) {
-      cancelAnimationFrame(timeinterval);
-      for ( key in trackers ){
-        trackers[key].update( 0 );
-      }
-      callback();
-      return;
-    }
-    
-    for ( key in trackers ){
-      trackers[key].update( t[key] );
-    }
-  }
-
-  setTimeout(updateClock,500);
-}
