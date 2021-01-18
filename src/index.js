@@ -3,6 +3,12 @@ import "materialize-css/dist/css/materialize.min.css";
 import "materialize-css/dist/js/materialize.min.js";
 
 import Clock from "./Clock.js";
+import DatePicker from "./DatePicker.js";
+
+// setInterval(() => {
+//         navigator.vibrate(5000);
+//         console.log(vibrate);
+//     }, 1000);
 
 function createTimer(){
   let url = new URL(window.location);
@@ -14,48 +20,6 @@ function createTimer(){
   url.searchParams.append("deadline", deadline.valueOf())
   window.location = url;
 }
-
-function dateTimePicker(){
-  var d_elems = document.createElement("input");
-    d_elems.hidden = true;
-    d_elems.type = "text";
-    d_elems.classList.add("datepicker");
-  document.body.appendChild(d_elems);
-
-    let t_elems = document.createElement("input");
-    t_elems.hidden = true;
-    t_elems.type = "text";
-    t_elems.classList.add("timepicker");
-    document.body.appendChild(t_elems);
-
-   document.addEventListener('DOMContentLoaded', () => {
-      d_elems = document.querySelectorAll('.datepicker');
-
-      
-      d_instance = M.Datepicker.init(d_elems, 
-        { autoClose: true, 
-          format: "yyyy-mm-dd",
-          minDate: new Date(),
-          onClose: () => t_instance.open()
-        })[0];
-      console.log(d_instance);
-
-      let t_elems = document.querySelectorAll('.timepicker');
-      
-      t_instance = M.Timepicker.init(t_elems, {
-        onCloseEnd: dateTimePicked
-      })[0];
-
-      function dateTimePicked(){
-        let time = t_instance.time + " " + d_instance.toString();
-        document.getElementById("deadline").value = time;
-        console.log(d_instance.toString() + "T" + t_instance.time);
-      }
-   });
-}
-
-let d_instance;
-let t_instance;
 
 let url = new URL(document.location);
 let params = url.searchParams;
@@ -90,13 +54,15 @@ if(deadline){
     document.body.appendChild(div);
   }
 }else{
+  let datepicker = new DatePicker((date) => {
+    document.getElementById("deadline").value = date;
+  });
    let el = document.createElement('div');
    el.innerHTML = "<label>Title:</label><input type='text' id='title'></br>" + 
     "<label>Deadline:</label><input type='text' id='deadline'></br>" + 
     "<a class='waves-effect waves-light btn' id='createButton'>Create</a>";
    document.body.appendChild(el);
-   dateTimePicker();
-   document.getElementById("deadline").onfocus = () => {d_instance.open()};
+   document.getElementById("deadline").onfocus = () => {window.navigator.vibrate(50000)};
    document.getElementById("createButton").onclick = () => {console.log('clicked');createTimer();};
 
 }
